@@ -16,6 +16,5 @@ async def handle_text(message: Message):
             "/projects — мои проекты\n"
             "/about — обо мне\n"
         )
-        )
-        await message.answer(
-        )
+
+        await message.answer()
