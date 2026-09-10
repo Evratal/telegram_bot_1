@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
+from keyboards import main_menu_kb
 
 router = Router()
 
@@ -14,9 +15,6 @@ async def cmd_start(message: Message):
         "• Разработать MVP вашего продукта\n"
         "• Автоматизировать бизнес с помощью AI\n"
         "• Улучшить UI/UX вашего сервиса\n\n"
-        "Что вас интересует? Напишите мне, или используйте команды:\n"
-        "/services — наши услуги\n"
-        "/projects — портфолио\n"
-        "/contact — связаться с владельцем\n"
-        "/help — помощь"
+        "Что вас интересует? Выберите раздел в меню 👇",
+        reply_markup=main_menu_kb
     )

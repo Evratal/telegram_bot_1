@@ -1,7 +1,18 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.types import Message
 
 router = Router()
+
+@router.message(F.text == "📞 Связаться с человеком")
+async def contact_from_menu(message: Message):
+    """Обработчик кнопки 'Связаться с человеком' из меню"""
+    await message.answer(
+        "📬 Связаться со мной:\n\n"
+        "• **Telegram:** @Evrat_First_Tele_bot\n"
+        "• **Email:** ваш_email@example.com\n"
+        "• **Время работы:** Пн-Сб, 10:00–19:00 МСК\n\n"
+        "Напишите мне — отвечу в течение часа!"
+    )
 
 @router.message()
 async def handle_text(message: Message):
@@ -16,5 +27,3 @@ async def handle_text(message: Message):
             "/projects — мои проекты\n"
             "/about — обо мне\n"
         )
-
-        await message.answer()
