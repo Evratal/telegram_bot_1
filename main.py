@@ -10,7 +10,7 @@ async def main():
     # Инициализируем базу данных
     init_db()
 
-    bot = Bot(token=BOT_TOKEN)
+    bot = Bot(token=BOT_TOKEN, timeout=60)
     dp = Dispatcher()
 
     # Регистрируем все роутеры

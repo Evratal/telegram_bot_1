@@ -52,18 +52,23 @@ async def clear_cart_callback(callback: CallbackQuery):
     """Очищает корзину"""
     clear_cart(callback.from_user.id)
     await callback.answer("🗑 Корзина очищена!", show_alert=True)
-    await callback.message.edit_text("🛒 Ваша корзина пуста")
+    try:
+        await callback.message.edit_text("🛒 Ваша корзина пуста")
+    except Exception as e:
+        print(f"Не удалось обновить сообщение: {e}")
 
 
 @router.callback_query(F.data == "go_shop")
 async def go_shop_callback(callback: CallbackQuery):
     """Возвращает к витрине"""
     await callback.answer()
-    # Здесь можно добавить логику перехода к витрине
-    await callback.message.edit_text(
-        "🛍️ **Наша витрина услуг:**\n\n"
-        "Выберите услугу ниже 👇"
-    )
+    try:
+        await callback.message.edit_text(
+            "🛍️ **Наша витрина услуг:**\n\n"
+            "Выберите услугу ниже 👇"
+        )
+    except Exception as e:
+        print(f"Не удалось обновить сообщение: {e}")
 
 
 @router.callback_query(F.data == "checkout")
@@ -99,13 +104,16 @@ async def checkout(callback: CallbackQuery):
             ]
         )
 
-        await callback.message.edit_text(
-            f"💰 **Ваш заказ:**\n\n{items_text}\n\n"
-            f"**Сумма:** {total:,.0f} ₽\n\n"
-            "Нажмите кнопку ниже для оплаты 👇",
-            reply_markup=kb,
-            parse_mode="Markdown"
-        )
+        try:
+            await callback.message.edit_text(
+                f"💰 **Ваш заказ:**\n\n{items_text}\n\n"
+                f"**Сумма:** {total:,.0f} ₽\n\n"
+                "Нажмите кнопку ниже для оплаты 👇",
+                reply_markup=kb,
+                parse_mode="Markdown"
+            )
+        except Exception as e:
+            print(f"Не удалось обновить сообщение: {e}")
     else:
         await callback.answer("Ошибка при создании платежа. Попробуйте позже.", show_alert=True)
 
@@ -132,15 +140,20 @@ async def paid_callback(callback: CallbackQuery, bot: Bot):
         except Exception as e:
             print(f"Ошибка отправки уведомления: {e}")
 
-        await callback.message.edit_text(
-            "✅ **Оплата прошла успешно!**\n\n"
-            "Мы получили ваш заказ и скоро свяжемся с вами.\n"
-            "Спасибо за доверие! 🙌"
-        )
+        try:
+            await callback.message.edit_text(
+                "✅ **Оплата прошла успешно!**\n\n"
+                "Мы получили ваш заказ и скоро свяжемся с вами.\n"
+                "Спасибо за доверие! 🙌"
+            )
+        except Exception as e:
+            print(f"Не удалось обновить сообщение: {e}")
+
     elif status == "pending":
         await callback.answer("⏳ Платёж ещё не завершён. Проверьте, что вы оплатили.", show_alert=True)
     else:
         await callback.answer("❌ Платёж не найден или отклонён. Попробуйте ещё раз.", show_alert=True)
+
 
 @router.callback_query(F.data == "show_cart")
 async def show_cart_callback(callback: CallbackQuery):
@@ -162,4 +175,7 @@ async def show_cart_callback(callback: CallbackQuery):
             ]
         )
 
-    await callback.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
+    try:
+        await callback.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
+    except Exception as e:
+        print(f"Не удалось обновить сообщение: {e}")
