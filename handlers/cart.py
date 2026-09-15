@@ -120,13 +120,17 @@ async def paid_callback(callback: CallbackQuery, bot: Bot):
         clear_cart(callback.from_user.id)
 
         # Отправляем уведомление владельцу
-        await bot.send_message(
-            OWNER_CHAT_ID,
-            f"✅ **Новый оплаченный заказ!**\n\n"
-            f"Пользователь: @{callback.from_user.username or callback.from_user.first_name}\n"
-            f"ID: {callback.from_user.id}\n\n"
-            f"Заказ: {payment_id}"
-        )
+        try:
+            await bot.send_message(
+                OWNER_CHAT_ID,
+                f"✅ **Новый оплаченный заказ!**\n\n"
+                f"Пользователь: @{callback.from_user.username or callback.from_user.first_name}\n"
+                f"ID: {callback.from_user.id}\n\n"
+                f"Заказ: {payment_id}"
+            )
+            print(f"Уведомление отправлено в {OWNER_CHAT_ID}")
+        except Exception as e:
+            print(f"Ошибка отправки уведомления: {e}")
 
         await callback.message.edit_text(
             "✅ **Оплата прошла успешно!**\n\n"
@@ -137,3 +141,25 @@ async def paid_callback(callback: CallbackQuery, bot: Bot):
         await callback.answer("⏳ Платёж ещё не завершён. Проверьте, что вы оплатили.", show_alert=True)
     else:
         await callback.answer("❌ Платёж не найден или отклонён. Попробуйте ещё раз.", show_alert=True)
+
+@router.callback_query(F.data == "show_cart")
+async def show_cart_callback(callback: CallbackQuery):
+    """Показывает корзину по кнопке 'Перейти в корзину'"""
+    cart_items = get_cart(callback.from_user.id)
+    text = format_cart(cart_items)
+
+    if cart_items:
+        kb = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="🗑 Очистить корзину", callback_data="clear_cart")],
+                [InlineKeyboardButton(text="✅ Оформить заказ", callback_data="checkout")]
+            ]
+        )
+    else:
+        kb = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="🛍 Перейти к витрине", callback_data="go_shop")]
+            ]
+        )
+
+    await callback.message.edit_text(text, reply_markup=kb, parse_mode="Markdown")
