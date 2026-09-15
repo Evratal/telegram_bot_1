@@ -47,8 +47,6 @@ def init_db():
         )
     """)
 
-    conn.commit()
-    conn.close()
     # Проверяем, есть ли колонка payment_id в orders
     cursor.execute("PRAGMA table_info(orders)")
     columns = [col[1] for col in cursor.fetchall()]
