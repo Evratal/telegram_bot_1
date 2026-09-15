@@ -49,7 +49,14 @@ def init_db():
 
     conn.commit()
     conn.close()
+    # Проверяем, есть ли колонка payment_id в orders
+    cursor.execute("PRAGMA table_info(orders)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if "payment_id" not in columns:
+        cursor.execute("ALTER TABLE orders ADD COLUMN payment_id TEXT")
 
+    conn.commit()
+    conn.close()
 
 def add_user(user_id: int, username: str = None, first_name: str = None):
     """Добавляет пользователя в базу"""
