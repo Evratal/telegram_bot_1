@@ -6,6 +6,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 YOOKASSA_SHOP_ID = os.getenv("YOOKASSA_SHOP_ID")
 YOOKASSA_SECRET_KEY = os.getenv("YOOKASSA_SECRET_KEY")
+OWNER_CHAT_ID = int(os.getenv("OWNER_CHAT_ID", 0))
 
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в .env файле!")

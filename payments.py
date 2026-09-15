@@ -26,7 +26,7 @@ def create_payment(amount: float, description: str, user_id: int) -> dict:
         "capture": True,
         "confirmation": {
             "type": "redirect",
-            "return_url": "https://t.me/your_bot"  # замените на вашего бота
+            "return_url": "https://t.me/Evrat_First_Tele_bot"  # замените на вашего бота
         },
         "description": description,
         "metadata": {

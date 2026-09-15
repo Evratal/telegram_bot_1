@@ -2,6 +2,7 @@ from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from database import get_cart, clear_cart, add_order, update_order_status
 from payments import create_payment, check_payment_status
+from config import OWNER_CHAT_ID
 
 router = Router()
 
@@ -110,17 +111,22 @@ async def checkout(callback: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith("paid_"))
-async def paid_callback(callback: CallbackQuery):
-    """Проверка оплаты"""
+async def paid_callback(callback: CallbackQuery, bot: Bot):
     payment_id = callback.data.split("_")[1]
     status = check_payment_status(payment_id)
 
     if status == "succeeded":
-        # Обновляем статус заказа
         update_order_status(payment_id, "paid")
-
-        # Очищаем корзину
         clear_cart(callback.from_user.id)
+
+        # Отправляем уведомление владельцу
+        await bot.send_message(
+            OWNER_CHAT_ID,
+            f"✅ **Новый оплаченный заказ!**\n\n"
+            f"Пользователь: @{callback.from_user.username or callback.from_user.first_name}\n"
+            f"ID: {callback.from_user.id}\n\n"
+            f"Заказ: {payment_id}"
+        )
 
         await callback.message.edit_text(
             "✅ **Оплата прошла успешно!**\n\n"
