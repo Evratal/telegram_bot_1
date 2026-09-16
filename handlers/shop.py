@@ -34,6 +34,20 @@ SERVICES = {
 }
 
 
+async def send_shop_catalog(message_or_callback):
+    """Отправляет витрину услуг (сообщение или callback)"""
+    if hasattr(message_or_callback, "answer"):
+        await message_or_callback.answer("🛍️ **Наша витрина услуг:**\n\nВыберите услугу:")
+        for service_key in SERVICES:
+            text, kb = create_service_card(service_key)
+            await message_or_callback.answer(text, reply_markup=kb, parse_mode="Markdown")
+    else:
+        await message_or_callback.message.answer("🛍️ **Наша витрина услуг:**\n\nВыберите услугу:")
+        for service_key in SERVICES:
+            text, kb = create_service_card(service_key)
+            await message_or_callback.message.answer(text, reply_markup=kb, parse_mode="Markdown")
+
+
 def format_price(price: int) -> str:
     """Форматирует цену с пробелами"""
     return f"{price:,}".replace(",", " ") + " ₽"
@@ -105,3 +119,4 @@ async def add_to_cart_callback(callback: CallbackQuery):
         ]
     )
     await callback.message.answer("Что дальше?", reply_markup=kb)
+

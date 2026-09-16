@@ -162,3 +162,24 @@ def get_orders_by_user(user_id: int) -> List[Dict]:
     ]
     conn.close()
     return orders
+
+
+def get_order_by_payment(payment_id: str) -> Optional[Dict]:
+    """Возвращает заказ по payment_id"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, user_id, items, total_price, status FROM orders WHERE payment_id = ?",
+        (payment_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return {
+            "id": row[0],
+            "user_id": row[1],
+            "items": row[2],
+            "total_price": row[3],
+            "status": row[4]
+        }
+    return None

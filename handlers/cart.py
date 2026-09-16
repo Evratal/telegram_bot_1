@@ -1,6 +1,7 @@
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from database import get_cart, clear_cart, add_order, update_order_status
+from database import get_cart, clear_cart, add_order, update_order_status, get_order_by_payment
+from handlers.shop import send_shop_catalog
 from payments import create_payment, check_payment_status
 from config import OWNER_CHAT_ID
 
@@ -16,7 +17,7 @@ def format_cart(cart_items) -> str:
     total = 0
 
     for item in cart_items:
-        price = item["price"] * item["quantity"]
+        price = int(item["price"]) * item["quantity"]  # int() убирает .0
         total += price
         text += f"• {item['name']} × {item['quantity']} = **{price:,} ₽**\n".replace(",", " ")
 
@@ -62,6 +63,7 @@ async def clear_cart_callback(callback: CallbackQuery):
 async def go_shop_callback(callback: CallbackQuery):
     """Возвращает к витрине"""
     await callback.answer()
+    await send_shop_catalog(callback)
     try:
         await callback.message.edit_text(
             "🛍️ **Наша витрина услуг:**\n\n"
@@ -88,6 +90,10 @@ async def checkout(callback: CallbackQuery):
 
     # Создаём платёж
     payment = create_payment(total, f"Заказ: {items_text}", user_id)
+
+    if "error" in payment:
+        await callback.answer("❌ Не удалось создать платёж. Попробуйте позже.", show_alert=True)
+        return
 
     if "confirmation" in payment:
         payment_url = payment["confirmation"]["confirmation_url"]
@@ -127,16 +133,26 @@ async def paid_callback(callback: CallbackQuery, bot: Bot):
         update_order_status(payment_id, "paid")
         clear_cart(callback.from_user.id)
 
+        # Получаем заказ из БД
+        order = get_order_by_payment(payment_id)
+
         # Отправляем уведомление владельцу
         try:
-            await bot.send_message(
-                OWNER_CHAT_ID,
-                f"✅ **Новый оплаченный заказ!**\n\n"
-                f"Пользователь: @{callback.from_user.username or callback.from_user.first_name}\n"
-                f"ID: {callback.from_user.id}\n\n"
-                f"Заказ: {payment_id}"
-            )
-            print(f"Уведомление отправлено в {OWNER_CHAT_ID}")
+            if order:
+                text = (
+                    f"✅ **Новый оплаченный заказ!**\n\n"
+                    f"Пользователь: @{callback.from_user.username or callback.from_user.first_name}\n"
+                    f"ID: {callback.from_user.id}\n\n"
+                    f"Состав заказа: {order['items']}\n"
+                    f"Сумма: {order['total_price']} ₽"
+                )
+            else:
+                text = (
+                    f"✅ **Новый оплаченный заказ!**\n"
+                    f"ID платежа: {payment_id}"
+                )
+
+            await bot.send_message(OWNER_CHAT_ID, text)
         except Exception as e:
             print(f"Ошибка отправки уведомления: {e}")
 
